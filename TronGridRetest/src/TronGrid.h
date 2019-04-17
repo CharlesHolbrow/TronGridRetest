@@ -12,7 +12,7 @@ public:
     void resize(int size, float step);
     ofNode node;
     ofColor c1 = ofColor(30, 30, 30);
-    ofColor c2 = ofColor(8, 167, 242, 200);
+    ofColor c2 = ofColor(8, 167, 242, 180);
 private:
     int mSize = 0;
     float mStep = 0;

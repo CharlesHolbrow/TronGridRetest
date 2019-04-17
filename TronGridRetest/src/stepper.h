@@ -19,7 +19,7 @@ public:
     double frameStart;
     double frameEnd;
     double stepZeroTime; // time of last step of previous frame
-    int steps;
+    int steps;           // number of setps in the last frame
     double stepSize = 0.1;
 
     // Set our step duration. Noop if <= 0.
