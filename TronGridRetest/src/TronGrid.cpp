@@ -14,7 +14,7 @@ TronGrid::TronGrid()
 
     // Slightly raise the grid above the plane to reduce artifacts
     mGridNode.setParent(node);
-    mGridNode.move(0, 0.001, 0);
+    mGridNode.move(0, 0.003, 0);
 }
 
 

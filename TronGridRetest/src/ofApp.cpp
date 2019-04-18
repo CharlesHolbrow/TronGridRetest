@@ -7,8 +7,8 @@ void ofApp::setup(){
     // global of options
     ofBackground(0);
     ofEnableDepthTest();
-    ofSetLineWidth(2);
-    //ofSetVerticalSync(true);
+    ofSetLineWidth(3);
+    //ofSetVerticalSync(true); // I believe vsync is forced from nvidia
 
     // fbo setup
     fboSettings.width = ofGetWidth();
@@ -23,23 +23,25 @@ void ofApp::setup(){
     ofClear(255);
     fbo.end();
 
-    //ofEnableSmoothing();
+    ofEnableSmoothing();
 
     int SIZE = 40;
     float STEP = 1;
 
     tg.resize(SIZE, STEP);
-    tg.node.move(SIZE*STEP/-2., -4, SIZE*STEP/-2.);
+    tg.node.move(SIZE*STEP/-2., -2, SIZE*STEP/-2.);
     tg.node.setParent(testNode);
 	//ofSetFrameRate(90);
 
     stepper.setStepSize(0.001);
     ofLog() << "maxSamples " << ofFbo::maxSamples();
-    lerpCam.setNext(cam);
-    //cam.disableMouseInput();
+    
+    cam.disableMouseInput();
     cam.setFarClip(1000);
     cam.setNearClip(0.01);
     cam.setDistance(5);
+    tn2.setScale(0.01);
+    lerpCam.setNext(cam);
 
     receiver.setup(6969);
 }
@@ -79,10 +81,10 @@ void ofApp::update(){
         std::string addr = m.getAddress();
         if (addr == "/controller/0") {
             glm::vec3 pos(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2));
-            glm::quat quat(m.getArgAsFloat(4), m.getArgAsFloat(5), m.getArgAsFloat(6), m.getArgAsFloat(3));
+            glm::quat quat(m.getArgAsFloat(3), m.getArgAsFloat(4), m.getArgAsFloat(5), m.getArgAsFloat(6));
             tn2.setOrientation(quat);
             tn2.setPosition(pos);
-            //lerpCam.setNext(pos, quat);
+            lerpCam.setNext(pos, quat);
         }
     }
 }
@@ -92,7 +94,7 @@ void ofApp::draw() {
     int steps = 64;
  
     // Get ready to interpolate the camera
-    lerpCam.setNext(cam.getPosition(), cam.getOrientationQuat());
+    //lerpCam.setNext(cam.getPosition(), cam.getOrientationQuat());
 
     fbo.begin();
     ofClear(0);
@@ -110,7 +112,7 @@ void ofApp::draw() {
         cam.begin();
 
         // rotate the grid
-        testNode.rotateDeg(stepper.stepSize * 50 * (sin(ofGetElapsedTimef() * 0.5) + 1), glm::vec3(0, 1, 0));
+        //testNode.rotateDeg(stepper.stepSize * 50 * (sin(ofGetElapsedTimef() * 0.5) + 1), glm::vec3(0, 1, 0));
         
         // Draw the z buffer for each step.  We don't want the plane covering up
         // the grid (as it was drawn on a previous step in this loop)
@@ -120,6 +122,10 @@ void ofApp::draw() {
 
         cam.end();
     }
+    cam.begin();
+    ofSetColor(255, 0, 0);
+    //tn2.draw();
+    cam.end();
     fbo.end();
 
     
@@ -128,6 +134,17 @@ void ofApp::draw() {
     ofBackgroundGradient(c1, c2);
     ofSetColor(255);
     fbo.draw(0, 0);
+
+    // Draw camera info
+    glm::vec3 cPos = cam.getGlobalPosition();
+    char str[100];
+    sprintf_s(str, "Camera: % 4.2f % 4.2f % 4.2f\tp:% 4.0f y:% 4.0f r:% 4.0f",
+        cPos.x, cPos.y, cPos.z,
+        cam.getPitchDeg(),
+        cam.getHeadingDeg(),
+        cam.getRollDeg());
+    ofSetColor(255, 0, 0);
+    ofDrawBitmapString(str, 2, 12);
 }
 
 //--------------------------------------------------------------
