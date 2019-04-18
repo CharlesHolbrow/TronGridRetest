@@ -34,8 +34,8 @@ void TronGrid::resize(int size, float step)
     for (int x = 0; x <= mSize; x++) {
         for (int z = 0; z <= mSize; z++) {
             glm::vec3 v = glm::vec3(x * mStep, 0, z * mStep);
-            if (x == 3) v.y = 1;
-            if (z == 4) v.y += 1;
+            //if (x == 3) v.y = 1;
+            //if (z == 4) v.y += 1;
             mPlane.addVertex(v);
             mGrid.addVertex(v);
             mGrid.addColor(c2);
@@ -92,6 +92,24 @@ void TronGrid::resize(int size, float step)
             int q6 = (mSize + 1) * (x + 1) + (mSize);
             mPlane.addIndex(q5);
             mPlane.addIndex(q6);
+        }
+    }
+}
+
+void TronGrid::setColor(ofFloatColor c) {
+    int i = 0;
+    glm::vec3 p0(0, 0, 0);
+
+    // Add lines to the grid
+    for (int x = 0; x <= mSize; x++) {
+        for (int z = 0; z <= mSize; z++) {
+            glm::vec3 p1(x, 0, z);
+            glm::vec3 dist = p0 - p1;
+            float l = glm::length(dist);
+            float v = ofMap(l, 0, 8, 1, 0, true);
+            //float a = 
+            mGrid.setColor(i, ofFloatColor(1, v, 0, 1./32));
+            i++;
         }
     }
 }

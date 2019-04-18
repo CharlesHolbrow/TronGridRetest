@@ -14,7 +14,7 @@ void ofApp::setup(){
     fboSettings.width = ofGetWidth();
     fboSettings.height = ofGetHeight();
     fboSettings.useDepth = true;
-    fboSettings.numSamples = 4;
+    fboSettings.numSamples = 16;
     fboSettings.internalformat = GL_RGBA16F;
     //fboSettings.internalformat = GL_RGBA;
     fbo.allocate(fboSettings);
@@ -23,13 +23,13 @@ void ofApp::setup(){
     ofClear(255);
     fbo.end();
 
-    ofEnableSmoothing();
+    //ofEnableSmoothing();
 
-    int SIZE = 40;
+    int SIZE = 20;
     float STEP = 1;
 
     tg.resize(SIZE, STEP);
-    tg.node.move(SIZE*STEP/-2., -2, SIZE*STEP/-2.);
+    tg.node.move(SIZE*STEP/-2., -4, SIZE*STEP/-2.);
     tg.node.setParent(testNode);
 	//ofSetFrameRate(90);
 
@@ -63,16 +63,13 @@ void ofApp::update(){
 
     // Setup the Stepper for this frame
     stepper.advanceFrame(frameDelta);
-
-    //testNode.rotateDeg(30 * frameDelta, glm::vec3(0, 1, 0));
-    //tg.node.move(sin(ofGetElapsedTimef()), 0., 0.);
-    tg.c2.b = sin(ofGetElapsedTimef() * .1) * 50 + 150;
-    tg.c2.r = sin(ofGetElapsedTimef()) * 127 + 127;
     
     // Log slow frames
     double frameDuration = stepper.frameDuration();
     ofSetWindowTitle(ofToString(frameDuration, 3));
     if (frameDuration > 0.020) ofLog() << "Slow Frame: " << frameDuration;
+
+    tg.setColor(ofFloatColor(0, 1, 0));
 
     // cam
     while (receiver.hasWaitingMessages()) {
@@ -85,13 +82,14 @@ void ofApp::update(){
             tn2.setOrientation(quat);
             tn2.setPosition(pos);
             lerpCam.setNext(pos, quat);
+            trigger0 = m.getArgAsFloat(7);
         }
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    int steps = 64;
+    int steps = 32;
  
     // Get ready to interpolate the camera
     //lerpCam.setNext(cam.getPosition(), cam.getOrientationQuat());
@@ -112,7 +110,7 @@ void ofApp::draw() {
         cam.begin();
 
         // rotate the grid
-        //testNode.rotateDeg(stepper.stepSize * 50 * (sin(ofGetElapsedTimef() * 0.5) + 1), glm::vec3(0, 1, 0));
+        //testNode.rotateDeg(stepper.stepSize * 20 * (sin(ofGetElapsedTimef() * 0.5) + 0.5), glm::vec3(0, 1, 0));
         
         // Draw the z buffer for each step.  We don't want the plane covering up
         // the grid (as it was drawn on a previous step in this loop)
@@ -127,8 +125,6 @@ void ofApp::draw() {
     //tn2.draw();
     cam.end();
     fbo.end();
-
-    
 
     //ofClear(0); // clear window
     ofBackgroundGradient(c1, c2);

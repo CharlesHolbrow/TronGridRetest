@@ -39,6 +39,7 @@ class ofApp : public ofBaseApp{
         ofNode tn2; // test node 2
 
         ofxOscReceiver receiver;
+        float trigger0;
 
     private:
         ofFbo::Settings fboSettings;

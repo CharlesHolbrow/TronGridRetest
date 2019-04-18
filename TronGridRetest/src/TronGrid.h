@@ -14,6 +14,8 @@ public:
     ofColor c1 = ofColor(30, 30, 30);
     ofFloatColor c2 = ofFloatColor(.031, .655, .949, 1./64);
     //ofFloatColor c2 = ofFloatColor(1, 0, 0, 0.7);
+    void setColor(ofFloatColor c);
+    
 private:
     int mSize = 0;
     float mStep = 0;
