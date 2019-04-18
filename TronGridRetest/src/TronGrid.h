@@ -12,7 +12,8 @@ public:
     void resize(int size, float step);
     ofNode node;
     ofColor c1 = ofColor(30, 30, 30);
-    ofColor c2 = ofColor(8, 167, 242, 180);
+    ofFloatColor c2 = ofFloatColor(.031, .655, .949, 1./64);
+    //ofFloatColor c2 = ofFloatColor(1, 0, 0, 0.7);
 private:
     int mSize = 0;
     float mStep = 0;

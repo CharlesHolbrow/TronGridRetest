@@ -14,7 +14,7 @@ TronGrid::TronGrid()
 
     // Slightly raise the grid above the plane to reduce artifacts
     mGridNode.setParent(node);
-    mGridNode.move(0, 0.1, 0);
+    mGridNode.move(0, 0.001, 0);
 }
 
 
@@ -34,8 +34,8 @@ void TronGrid::resize(int size, float step)
     for (int x = 0; x <= mSize; x++) {
         for (int z = 0; z <= mSize; z++) {
             glm::vec3 v = glm::vec3(x * mStep, 0, z * mStep);
-            if (x == 3) v.y = 30;
-            if (z == 4) v.y += 20;
+            if (x == 3) v.y = 1;
+            if (z == 4) v.y += 1;
             mPlane.addVertex(v);
             mGrid.addVertex(v);
             mGrid.addColor(c2);
@@ -98,8 +98,14 @@ void TronGrid::resize(int size, float step)
 
 void TronGrid::draw()
 {
-    drawPlane();
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    drawPlane();               // draw the plane, no colors, no alpha
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    // draw the grid, but just the colors (not the depth buffer)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE); // Flend func: Additive
     drawGrid();
+    ofEnableAlphaBlending();           // Blend func: Restore
 }
 
 void TronGrid::drawPlane()

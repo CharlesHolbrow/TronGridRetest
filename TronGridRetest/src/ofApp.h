@@ -4,6 +4,7 @@
 #include "stepper.h"
 #include "TronGrid.h"
 #include "LerpNode.h"
+#include "ofxOsc.h"
 
 class ofApp : public ofBaseApp{
 
@@ -34,6 +35,10 @@ class ofApp : public ofBaseApp{
         double previousMicroseconds = 0;
         Stepper stepper;
         TronGrid tg;
+
+        ofNode tn2; // test node 2
+
+        ofxOscReceiver receiver;
 
     private:
         ofFbo::Settings fboSettings;

@@ -3,10 +3,11 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+
     // global of options
     ofBackground(0);
     ofEnableDepthTest();
-    ofSetLineWidth(3);
+    ofSetLineWidth(2);
     //ofSetVerticalSync(true);
 
     // fbo setup
@@ -24,15 +25,23 @@ void ofApp::setup(){
 
     //ofEnableSmoothing();
 
-    tg.resize(30, 80);
-    tg.node.move(-1200, -15, -1200);
-    tg.node.setParent(testNode);
-	ofSetFrameRate(60);
+    int SIZE = 40;
+    float STEP = 1;
 
-    stepper.setStepSize(0.002);
+    tg.resize(SIZE, STEP);
+    tg.node.move(SIZE*STEP/-2., -4, SIZE*STEP/-2.);
+    tg.node.setParent(testNode);
+	//ofSetFrameRate(90);
+
+    stepper.setStepSize(0.001);
     ofLog() << "maxSamples " << ofFbo::maxSamples();
     lerpCam.setNext(cam);
     //cam.disableMouseInput();
+    cam.setFarClip(1000);
+    cam.setNearClip(0.01);
+    cam.setDistance(5);
+
+    receiver.setup(6969);
 }
 
 //--------------------------------------------------------------
@@ -56,19 +65,32 @@ void ofApp::update(){
     //testNode.rotateDeg(30 * frameDelta, glm::vec3(0, 1, 0));
     //tg.node.move(sin(ofGetElapsedTimef()), 0., 0.);
     tg.c2.b = sin(ofGetElapsedTimef() * .1) * 50 + 150;
-    //tg.c2.r = sin(ofGetElapsedTimef()) * 127 + 127;
+    tg.c2.r = sin(ofGetElapsedTimef()) * 127 + 127;
     
     // Log slow frames
     double frameDuration = stepper.frameDuration();
     ofSetWindowTitle(ofToString(frameDuration, 3));
     if (frameDuration > 0.020) ofLog() << "Slow Frame: " << frameDuration;
+
+    // cam
+    while (receiver.hasWaitingMessages()) {
+        ofxOscMessage m;
+        receiver.getNextMessage(&m);
+        std::string addr = m.getAddress();
+        if (addr == "/controller/0") {
+            glm::vec3 pos(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2));
+            glm::quat quat(m.getArgAsFloat(4), m.getArgAsFloat(5), m.getArgAsFloat(6), m.getArgAsFloat(3));
+            tn2.setOrientation(quat);
+            tn2.setPosition(pos);
+            //lerpCam.setNext(pos, quat);
+        }
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    int steps = stepper.steps;
-    int alpha = 255 / steps;
-
+    int steps = 64;
+ 
     // Get ready to interpolate the camera
     lerpCam.setNext(cam.getPosition(), cam.getOrientationQuat());
 
@@ -81,34 +103,31 @@ void ofApp::draw() {
 
     // Draw a bunch of steps to the FBO
     for (int i = 0; i < steps; i++) {
+        // Interpolate the camera
         lerpCam.lerp(float(i + 1) / float(steps));
         cam.setOrientation(lerpCam.getOrientationQuat());
         cam.setPosition(lerpCam.getGlobalPosition());
         cam.begin();
+
         // rotate the grid
-        testNode.rotateDeg(stepper.stepsDuration() * 50. / steps * (sin(ofGetElapsedTimef() * 0.5) + 1), glm::vec3(0, 1, 0));
+        testNode.rotateDeg(stepper.stepSize * 50 * (sin(ofGetElapsedTimef() * 0.5) + 1), glm::vec3(0, 1, 0));
         
         // Draw the z buffer for each step.  We don't want the plane covering up
         // the grid (as it was drawn on a previous step in this loop)
         glClear(GL_DEPTH_BUFFER_BIT); // Use a different depth buffer on each step
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        tg.drawPlane();               // draw the plane, no colors, no alpha
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-        // draw the grid, but just the colors (not the depth buffer)
-        ofEnableAlphaBlending();
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE); // Flend func: Additive
-        tg.drawGrid();
-        ofEnableAlphaBlending();           // Blend func: Restore
+        tg.draw();
+
         cam.end();
     }
     fbo.end();
 
+    
+
     //ofClear(0); // clear window
     ofBackgroundGradient(c1, c2);
-    ofSetColor(255, alpha);
+    ofSetColor(255);
     fbo.draw(0, 0);
-    ofEnableAlphaBlending();
 }
 
 //--------------------------------------------------------------
